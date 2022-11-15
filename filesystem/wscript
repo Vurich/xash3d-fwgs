@@ -23,9 +23,11 @@ def configure(conf):
 
 def build(bld):
 	bld(name = 'filesystem_includes', export_includes = '.')
+	source = bld.path.ant_glob(['*.c', '*.cpp'])
+	source += ['../engine/common/whereami.c']
 	bld.shlib(target = 'filesystem_stdio',
 		features = 'cxx',
-		source = bld.path.ant_glob(['*.c', '*.cpp']),
+		source = source,
 		use = 'filesystem_includes public',
 		install_path = bld.env.LIBDIR,
 		subsystem = bld.env.MSVC_SUBSYSTEM)
