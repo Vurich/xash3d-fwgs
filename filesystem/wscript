@@ -24,7 +24,7 @@ def configure(conf):
 def build(bld):
 	bld(name = 'filesystem_includes', export_includes = '.')
 	source = bld.path.ant_glob(['*.c', '*.cpp'])
-	source += ['../engine/common/whereami.c']
+	# source += ['../engine/common/whereami.c']
 	bld.shlib(target = 'filesystem_stdio',
 		features = 'cxx',
 		source = source,

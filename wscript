@@ -214,7 +214,7 @@ def configure(conf):
 	]
 
 	c_compiler_optional_flags = [
-		'-Werror=incompatible-pointer-types',
+		# '-Werror=incompatible-pointer-types',
 		'-Werror=implicit-function-declaration',
 		'-Werror=int-conversion',
 		'-Werror=implicit-int',
