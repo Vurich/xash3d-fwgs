@@ -16,6 +16,7 @@ GNU General Public License for more details.
 #include "common.h"
 #include "sound.h"
 #include "client.h"
+#include "mixer.h"
 
 #define IPAINTBUFFER 0
 #define IROOMBUFFER 1
@@ -519,13 +520,9 @@ int S_MixDataToDevice(channel_t *pChannel, int sampleCount, int outRate, int out
 qboolean S_ShouldContinueMixing(channel_t *ch)
 {
 	if (ch->isSentence)
-	{
-		if (ch->currentWord)
-			return true;
-		return false;
-	}
-
-	return !ch->pMixer.finished;
+		return ch->currentWord != NULL;
+	else
+		return !ch->pMixer.finished;
 }
 
 // Mix all channels into active paintbuffers until paintbuffer is full or 'endtime' is reached.
@@ -1059,14 +1056,13 @@ void MIX_PaintChannels(int endtime)
 
 		MIX_UpsampleAllPaintbuffers(end, count);
 
-		// process all sounds with DSP
-		DSP_Process(idsp_room, MIX_GetPFrontFromIPaint(IROOMBUFFER), count);
+		portable_samplepair_t *interleaved_buffers[DSP_MIXER_CHANNELS] = {
+			MIX_GetPFrontFromIPaint(IPAINTBUFFER),
+			MIX_GetPFrontFromIPaint(IROOMBUFFER),
+			MIX_GetPFrontFromIPaint(ISTREAMBUFFER),
+		};
 
-		// add room FX
-		MIX_MixPaintbuffers(IPAINTBUFFER, IROOMBUFFER, IPAINTBUFFER, count, S_GetMasterVolume());
-
-		// add music or soundtrack from movie (no dsp)
-		MIX_MixPaintbuffers(IPAINTBUFFER, ISTREAMBUFFER, IPAINTBUFFER, count, S_GetMusicVolume());
+		mixer_process(interleaved_buffers, MIX_GetPFrontFromIPaint(IPAINTBUFFER), count, SOUND_DMA_SPEED);
 
 		// clip all values > 16 bit down to 16 bit
 		MIX_CompressPaintbuffer(IPAINTBUFFER, count);
